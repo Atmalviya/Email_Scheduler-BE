@@ -20,7 +20,11 @@ exports.signIn = async (req, res) => {
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.cookie('token', token, { httpOnly: true });
+    const cookieOptions = {
+        httpOnly: true,
+        sameSite: 'None',
+    };
+    res.cookie('token', token, cookieOptions);
     res.status(200).json({ message: 'Signed in successfully', success: true});
 };
 
