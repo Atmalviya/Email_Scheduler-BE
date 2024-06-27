@@ -32,7 +32,9 @@ exports.signOut = (req, res) => {
 exports.islogin = async (req, res) => {
     try {
         const token = req.cookies.token;
+        console.log(token)
         const verified = jwt.verify(token, process.env.JWT_SECRET);
+        console.log(verified)
         req.user = verified;
         res.status(200).json({ message: 'User is logged in', status : true });
     } catch (err) {
