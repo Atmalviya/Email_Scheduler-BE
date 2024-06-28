@@ -1,11 +1,15 @@
 require('dotenv').config();
-const app = require('./app');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const cors = require('cors');
-const PORT = process.env.PORT || 3000;
+require('./config/db'); 
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+const emailRoutes = require('./routes/emailRoutes');
+const authRoutes = require('./routes/authRoutes');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
 
 const corsOptions = {
     origin: 'http://localhost:5173',  // Replace with your frontend URL
@@ -15,3 +19,12 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
+
+app.use(bodyParser.json());
+app.use(cookieParser());
+app.use('/api', emailRoutes);
+app.use('/auth', authRoutes);
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

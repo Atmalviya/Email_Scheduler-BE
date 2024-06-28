@@ -13,35 +13,39 @@ exports.signUp = async (req, res) => {
 };
 
 exports.signIn = async (req, res) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user || !(await user.comparePassword(password))) {
-        return res.status(400).json({ message: 'Invalid credentials' });
-    }
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    const cookieOptions = {
-        httpOnly: true,
-        sameSite: 'None',
-    };
-    res.cookie('token', token, cookieOptions);
-    res.status(200).json({ message: 'Signed in successfully', success: true});
-};
-
-exports.signOut = (req, res) => {
-    res.cookie('token', '', { httpOnly: true, expires: new Date(0) });
-    res.status(200).json({ message: 'Signed out successfully' });
-};
-
-exports.islogin = async (req, res) => {
     try {
-        const token = req.cookies.token;
-        console.log(token)
-        const verified = jwt.verify(token, process.env.JWT_SECRET);
-        console.log(verified)
-        req.user = verified;
-        res.status(200).json({ message: 'User is logged in', status : true });
+        const { email, password } = req.body;
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const isPasswordValid = await user.comparePassword(password);
+        if (!isPasswordValid) {
+            return res.status(400).json({ message: 'Invalid password' });
+        }
+
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        const cookieOptions = {
+            secure: false,
+            httpOnly: true,
+            sameSite: 'None',
+            maxAge: 3600000 // 1 hour
+        };
+
+        res.cookie('token', token, cookieOptions);
+        res.status(200).json({ message: 'Signed in successfully', success: true, token });
+    } catch (error) {
+        console.error('Error during sign in:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
+exports.islogin = (req, res) => {
+    try {
+        res.status(200).json({ message: 'User is logged in', status: true });
     } catch (err) {
-        res.status(400).json({ message: 'User is not logged in', status : false});
+        res.status(400).json({ message: 'User is not logged in', status: false });
     }
 };
