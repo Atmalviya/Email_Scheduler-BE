@@ -12,7 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const corsOptions = {
-    origin: 'https://email-scheduler-fe.vercel.app',
+    origin: '*',
     credentials: true,  
     methods: ['GET', 'POST', 'PUT', 'DELETE'] 
 };
